@@ -4,9 +4,10 @@ import { ASSETS } from '../lib/assetsConfig';
 
 interface AboutMeProps {
   placeholderRef: React.RefObject<HTMLDivElement | null>;
+  theme: 'dark' | 'light';
 }
 
-export const AboutMe: React.FC<AboutMeProps> = ({ placeholderRef }) => {
+export const AboutMe: React.FC<AboutMeProps> = ({ placeholderRef, theme }) => {
   const [downloadState, setDownloadState] = useState<'idle' | 'loading' | 'success'>('idle');
 
   const handleDownload = () => {
@@ -17,10 +18,11 @@ export const AboutMe: React.FC<AboutMeProps> = ({ placeholderRef }) => {
     setTimeout(() => {
       setDownloadState('success');
       
-      // Trigger the local file download
+      // Trigger the Cloudinary file download (fl_attachment forces native download)
       const link = document.createElement('a');
-      link.href = '/Vinayak_Patel_Resume.pdf';
-      link.download = 'Vinayak_Patel_Resume.pdf';
+      link.href = 'https://res.cloudinary.com/dwhyfscoc/image/upload/fl_attachment/v1783635297/Vinayak_Resume_tj7jmk.pdf';
+      link.target = '_blank';
+      link.download = 'Vinayak_Resume.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -332,7 +334,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ placeholderRef }) => {
             >
               {/* Mobile only static image fallback displaying front face of card (duncan portrait) */}
               <img
-                src={ASSETS.duncanPortrait}
+                src={theme === 'light' ? ASSETS.hero.light : ASSETS.hero.dark}
                 alt="Portrait preview"
                 style={{
                   width: '100%',

@@ -17,6 +17,7 @@ export function useLenis() {
     })
 
     lenisRef.current = lenis
+    ;(window as any).lenis = lenis
 
     // Sync Lenis with GSAP ticker — critical for ScrollTrigger accuracy
     const updatePhysics = (time: number) => {
@@ -32,6 +33,7 @@ export function useLenis() {
     return () => {
       lenis.destroy()
       gsap.ticker.remove(updatePhysics)
+      ;(window as any).lenis = undefined
     }
   }, [])
 

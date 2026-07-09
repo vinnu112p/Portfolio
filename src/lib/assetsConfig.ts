@@ -1,6 +1,9 @@
 export const ASSETS = {
   // General Images
-  duncanPortrait: "https://res.cloudinary.com/dwhyfscoc/image/upload/v1782282172/duncan_portrait_wgc7pp.jpg",
+  hero: {
+    light: "https://res.cloudinary.com/dwhyfscoc/image/upload/v1783626808/Dark_i4cooq.jpg",
+    dark: "https://res.cloudinary.com/dwhyfscoc/image/upload/v1783626808/Light_lnt3se.jpg",
+  },
   workspaceBack: "https://res.cloudinary.com/dwhyfscoc/image/upload/v1782282180/workspace_back_e4urb3.jpg",
 
   // Services Previews

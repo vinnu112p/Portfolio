@@ -1,6 +1,7 @@
 .contactSection {
   position: relative;
-  padding: 120px 24px 0px; /* footer sits at the bottom with 0 bottom padding for section */
+  padding: 120px 24px 0px;
+  /* footer sits at the bottom with 0 bottom padding for section */
   border-top: 1px solid var(--border-color);
   background-color: var(--bg-color);
   overflow: hidden;
@@ -200,13 +201,16 @@
 .label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--accent); /* Fallback style, handled dynamically in component */
+  color: var(--accent);
+  /* Fallback style, handled dynamically in component */
   text-transform: capitalize;
   letter-spacing: 0.05em;
   transition: color 0.3s ease;
 }
 
-.input, .textarea, .select {
+.input,
+.textarea,
+.select {
   width: 100%;
   background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-color);
@@ -226,12 +230,15 @@
   background-color: rgba(0, 0, 0, 0.03);
 }
 
-.input::placeholder, .textarea::placeholder {
+.input::placeholder,
+.textarea::placeholder {
   color: var(--text-secondary);
   opacity: 0.5;
 }
 
-.input:focus, .textarea:focus, .selectHeader:focus {
+.input:focus,
+.textarea:focus,
+.selectHeader:focus {
   background-color: rgba(255, 255, 255, 0.06);
   border-color: var(--accent);
 }
@@ -326,7 +333,8 @@
   outline: none;
 }
 
-.selectOption:hover, .selectOptionSelected {
+.selectOption:hover,
+.selectOptionSelected {
   background-color: var(--accent);
   color: var(--accent-text);
 }
@@ -335,13 +343,16 @@
 .selectOptionsList::-webkit-scrollbar {
   width: 6px;
 }
+
 .selectOptionsList::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .selectOptionsList::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 3px;
 }
+
 .selectOptionsList::-webkit-scrollbar-thumb:hover {
   background: var(--accent);
 }
@@ -490,7 +501,7 @@
   margin-left: -50vw;
   margin-right: -50vw;
   background-color: var(--accent);
-  
+
   /* Default (Dark Theme / Lime Green Background) */
   --footer-text: #2c2c30;
   --footer-text-muted: rgba(44, 44, 48, 0.6);
@@ -500,11 +511,12 @@
   --footer-social-border: rgba(44, 44, 48, 0.1);
   --footer-social-hover-bg: #2c2c30;
   --footer-social-hover-color: var(--accent);
-  
+
   color: var(--footer-text);
   padding: 30px 0 18px;
   margin-top: 60px;
-  z-index: 99999; /* Highest z-index to overlay all on screen */
+  z-index: 99999;
+  /* Highest z-index to overlay all on screen */
 }
 
 [data-theme='light'] .footer {
@@ -553,10 +565,12 @@
 }
 
 .footerValue {
-  font-size: clamp(1.1rem, 1.8vw, 1.35rem); /* Scaled down content text size */
+  font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+  /* Scaled down content text size */
   font-weight: 700;
   color: var(--footer-text);
-  white-space: nowrap; /* Prevent wrapping on desktop */
+  white-space: nowrap;
+  /* Prevent wrapping on desktop */
   transition: opacity 0.2s ease;
 }
 
@@ -620,7 +634,8 @@ a.footerValue:hover {
   }
 
   .portraitColumn {
-    order: 2; /* Form on top, image below on tablets/mobile */
+    order: 2;
+    /* Form on top, image below on tablets/mobile */
   }
 
   .portraitWrapper {
@@ -633,7 +648,7 @@ a.footerValue:hover {
     bottom: -20px;
     left: -20px;
   }
-  
+
   .badgeContent {
     font-size: 1.4rem;
   }
@@ -642,11 +657,15 @@ a.footerValue:hover {
     grid-template-columns: 1fr;
     gap: 30px;
   }
+
   .footerCol:last-child {
-    align-items: flex-start; /* Reset align-items to left for mobile layout */
+    align-items: flex-start;
+    /* Reset align-items to left for mobile layout */
   }
+
   .footerValue {
-    white-space: normal; /* Allow wrapping on mobile screens */
+    white-space: normal;
+    /* Allow wrapping on mobile screens */
     word-break: break-all;
   }
 }
@@ -655,17 +674,17 @@ a.footerValue:hover {
   .contactSection {
     padding: 80px 16px 0px;
   }
-  
+
   .formRow {
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  
+
   .submitBtn {
     width: 100%;
     align-self: stretch;
   }
-  
+
   .footerBottom {
     flex-direction: column;
     gap: 12px;

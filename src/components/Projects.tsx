@@ -365,6 +365,7 @@ const StackCardItem: React.FC<{
   return (
     <motion.div
       className="project-card-item"
+      data-cursor="project"
       style={{
         y,
         scale,

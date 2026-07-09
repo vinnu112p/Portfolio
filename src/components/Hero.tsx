@@ -5,9 +5,10 @@ import { ASSETS } from '../lib/assetsConfig';
 
 interface HeroProps {
   placeholderRef: React.RefObject<HTMLDivElement | null>;
+  theme: 'dark' | 'light';
 }
 
-export const Hero: React.FC<HeroProps> = ({ placeholderRef }) => {
+export const Hero: React.FC<HeroProps> = ({ placeholderRef, theme }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const digitalRef = useRef<HTMLDivElement>(null);
   const designerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +78,7 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef }) => {
           gridTemplateColumns: '1fr 380px 1fr',
           alignItems: 'center',
           width: '100%',
-          maxWidth: '1200px',
+          maxWidth: '1400px', // Expanded layout width to give columns more breathing room
           zIndex: 1,
           gap: '20px',
         }}
@@ -90,43 +91,60 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef }) => {
             y: textY,
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-start',
+            alignItems: 'flex-end', // Aligned to the right to anchor next to the card
             justifyContent: 'center',
-            textAlign: 'left',
+            textAlign: 'right',
+            paddingRight: '35px', // Exact symmetric gap from the card (matches paddingLeft on right)
           }}
           className="hero-left"
         >
-          <div ref={nameRef} style={{ overflow: 'hidden' }}>
-            <h1
-              id="hero-title"
-              style={{
-                fontSize: '1.2rem',
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-body)',
-                textTransform: 'uppercase',
-                display: 'block',
-                marginBottom: '8px',
-                margin: 0,
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            {/* Name - Absolutely positioned above FULLSTACK on desktop, starts at leftmost edge */}
+            <div 
+              ref={nameRef} 
+              className="hero-name-wrapper"
+              style={{ 
+                position: 'absolute', 
+                bottom: '100%', 
+                left: '15px', // Shifted slightly right to align perfectly with the "F" in FULLSTACK
+                marginBottom: '12px',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
               }}
             >
-              Vinayak Patel
-            </h1>
-          </div>
-          <div ref={digitalRef} style={{ overflow: 'hidden' }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(3.5rem, 7vw, 6.5rem)',
-                lineHeight: 0.85,
-                fontWeight: 'bold',
-                color: 'var(--text-primary)',
-                margin: 0,
-                letterSpacing: '-0.01em',
-              }}
-            >
-              FULL STACK
+              <h1
+                id="hero-title"
+                style={{
+                  fontSize: 'clamp(1.6rem, 3.2vw, 2.4rem)', // Increased size
+                  fontWeight: 700, // Antonio bold weight
+                  letterSpacing: '0.08em',
+                  color: 'var(--accent)',
+                  fontFamily: 'var(--font-display)', // Antonio font
+                  textTransform: 'uppercase',
+                  margin: 0,
+                  lineHeight: 1.1,
+                }}
+              >
+                Vinayak Patel
+              </h1>
+            </div>
+            {/* FULLSTACK */}
+            <div ref={digitalRef} style={{ overflow: 'hidden' }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(4.2rem, 7.8vw, 6.8rem)', // Increased size
+                  lineHeight: 0.9,
+                  fontWeight: 700, // Antonio bold weight
+                  color: 'var(--text-primary)',
+                  margin: 0,
+                  padding: '0.05em 0', // Prevents clipping at top and bottom
+                  letterSpacing: '0.01em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                FULLSTACK
+              </div>
             </div>
           </div>
         </motionFramer.div>
@@ -156,7 +174,7 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef }) => {
           >
             {/* Mobile only static image fallback */}
             <img
-              src={ASSETS.duncanPortrait}
+              src={theme === 'light' ? ASSETS.hero.light : ASSETS.hero.dark}
               alt="Vinayak Patel"
               style={{
                 width: '100%',
@@ -179,38 +197,55 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef }) => {
             alignItems: 'flex-start',
             justifyContent: 'center',
             textAlign: 'left',
-            paddingLeft: '16px',
+            paddingLeft: '35px', // Pulled closer to the card boundary
+            paddingRight: '15px', // Prevents screen overflow
           }}
           className="hero-right"
         >
-          <div ref={designerRef} style={{ overflow: 'hidden' }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(3.5rem, 7vw, 6.5rem)',
-                lineHeight: 0.85,
-                fontWeight: 'bold',
-                color: 'var(--text-primary)',
-                margin: 0,
-                letterSpacing: '-0.01em',
-              }}
-            >
-              DEVELOPER
+          <div style={{ position: 'relative', width: '100%' }}>
+            {/* DEVELOPER */}
+            <div ref={designerRef} style={{ overflow: 'hidden' }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(4.2rem, 7.8vw, 6.8rem)', // Increased size
+                  lineHeight: 0.9,
+                  fontWeight: 700, // Antonio bold weight
+                  color: 'var(--text-primary)',
+                  margin: 0,
+                  padding: '0.05em 0', // Prevents clipping at top and bottom
+                  letterSpacing: '0.01em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                DEVELOPER
+              </div>
             </div>
-          </div>
-          <div ref={descRef} style={{ overflow: 'hidden' }}>
-            <p
-              style={{
-                color: 'var(--text-secondary)',
-                fontSize: '1.15rem',
-                lineHeight: '1.5',
+            {/* Description - Absolutely positioned below DEVELOPER on desktop */}
+            <div 
+              ref={descRef} 
+              className="hero-desc-wrapper"
+              style={{ 
+                position: 'absolute', 
+                top: '100%', 
+                left: '38%', // Starts under the second 'E' of DEVELOPER
+                width: '62%', // Aligns right edge with 'R' of DEVELOPER (38% + 62% = 100%)
                 marginTop: '16px',
-                maxWidth: '280px',
-                fontFamily: 'var(--font-body)',
+                overflow: 'hidden',
               }}
             >
-              Building scalable applications, AI-powered solutions, and modern digital experiences.
-            </p>
+              <p
+                style={{
+                  color: 'var(--text-secondary)',
+                  fontSize: '1.15rem',
+                  lineHeight: '1.5',
+                  margin: 0,
+                  fontFamily: 'var(--font-body)',
+                }}
+              >
+                Building scalable applications, AI-powered solutions, and modern digital experiences.
+              </p>
+            </div>
           </div>
         </motionFramer.div>
       </div>
@@ -226,6 +261,11 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef }) => {
           .hero-portrait-placeholder {
             border: 1px solid var(--border-color) !important;
             box-shadow: 0 12px 24px rgba(0,0,0,0.2) !important;
+          }
+        }
+        @media (min-width: 992px) and (max-width: 1280px) {
+          .hero-right {
+            padding-left: 10px !important;
           }
         }
         @media (max-width: 991px) {
@@ -247,6 +287,18 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef }) => {
           .hero-portrait-placeholder {
             max-width: 320px !important;
             height: 410px !important;
+          }
+          .hero-name-wrapper, .hero-desc-wrapper {
+            position: static !important;
+            margin: 12px 0 0 !important;
+            transform: none !important;
+            width: auto !important;
+            max-width: none !important;
+            text-align: center !important;
+          }
+          .hero-desc-wrapper p {
+            max-width: 280px !important;
+            margin: 0 auto !important;
           }
         }
       `}</style>

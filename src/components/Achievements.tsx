@@ -356,6 +356,7 @@ function Card({ data, i, theme, isLoading }: CardProps) {
 
       <div style={{ ...splash, background }} />
       <motion.div
+        data-cursor="achievement"
         style={{
           ...card,
           backgroundColor: cardBg,

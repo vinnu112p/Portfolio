@@ -34,7 +34,7 @@ const newReleases = [
   },
   {
     title: 'Shritu Website',
-    url: 'https://shritu.in/',
+    url: 'https://shritu.com/',
     image: ASSETS.scrollPreviews.shritu,
     scrollDuration: 18, // Tallest screenshot, longest duration
   }
@@ -48,6 +48,9 @@ function App() {
   const [isHiRemoved, setIsHiRemoved] = useState<boolean>(false);
   const [activeReleaseIndex, setActiveReleaseIndex] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [cursorState, setCursorState] = useState<'default' | 'pointer' | 'project' | 'achievement' | 'service'>('default');
+  const [isHeroHovered, setIsHeroHovered] = useState<boolean>(false);
+  const [isIntroPlaying, setIsIntroPlaying] = useState<boolean>(true);
 
   // Scroll Progress Bar logic
   const { scrollYProgress } = useScroll();
@@ -60,12 +63,12 @@ function App() {
   // Auto-cycle through new releases dynamically based on their specific duration, but pause if the modal is open!
   useEffect(() => {
     if (isPreviewOpen) return;
-    
+
     const duration = newReleases[activeReleaseIndex].scrollDuration * 1000;
     const timer = setTimeout(() => {
       setActiveReleaseIndex((prev) => (prev + 1) % newReleases.length);
     }, duration);
-    
+
     return () => clearTimeout(timer);
   }, [activeReleaseIndex, isPreviewOpen]);
 
@@ -91,21 +94,21 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Listen for scroll to permanently remove the 'Hi' badge on first flip backward
+  // Listen for scroll to fade out/in the 'Hi' badge in the hero section
   useEffect(() => {
-    if (window.scrollY > 50) {
-      setIsHiRemoved(true);
-    }
     const handleScroll = () => {
-      if (window.scrollY > 50) {
+      if (window.scrollY > 80) {
         setIsHiRemoved(true);
+      } else {
+        setIsHiRemoved(false);
       }
     };
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Smooth Custom Cursor follower logic using GSAP quickTo
+  // Smooth Custom Cursor follower logic using GSAP quickTo (Inertia + Event Delegation)
   useEffect(() => {
     if (isLoading) return;
 
@@ -115,18 +118,39 @@ function App() {
     // Position custom cursor off-screen initially
     gsap.set(cursor, { x: -100, y: -100 });
 
-    const xTo = gsap.quickTo(cursor, "x", { duration: 0.1, ease: 'power2.out' });
-    const yTo = gsap.quickTo(cursor, "y", { duration: 0.1, ease: 'power2.out' });
+    // 0.3s duration + power3.out ease gives it a smooth, liquid inertia feel
+    const xTo = gsap.quickTo(cursor, "x", { duration: 0.3, ease: 'power3.out' });
+    const yTo = gsap.quickTo(cursor, "y", { duration: 0.3, ease: 'power3.out' });
 
     const handleMouseMove = (e: MouseEvent) => {
-      xTo(e.clientX + 10);
-      yTo(e.clientY + 10);
+      // Mathematically center the cursor follower on the mouse pointer
+      xTo(e.clientX);
+      yTo(e.clientY);
+    };
+
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+
+      const isInteractive = target.closest('a, button, [role="button"], input, textarea, select, .nav-item-btn, .resume-btn');
+      const hoverable = target.closest('[data-cursor]');
+
+      if (isInteractive) {
+        setCursorState('pointer');
+      } else if (hoverable) {
+        const cursorType = hoverable.getAttribute('data-cursor') as any;
+        setCursorState(cursorType || 'default');
+      } else {
+        setCursorState('default');
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mouseover', handleMouseOver, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseover', handleMouseOver);
     };
   }, [isLoading]);
 
@@ -144,8 +168,8 @@ function App() {
           if (entry.isIntersecting) {
             setActiveSection(
               sectionId === 'about-me' ? 'about' :
-              sectionId === 'current-focus' ? 'focus' :
-              sectionId
+                sectionId === 'current-focus' ? 'focus' :
+                  sectionId
             );
           }
         },
@@ -302,9 +326,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isIntroPlaying) return;
 
-    const timeoutId = setTimeout(initScrollTrigger, 150);
+    const timeoutId = setTimeout(initScrollTrigger, 50);
 
     window.addEventListener('resize', initScrollTrigger);
 
@@ -313,7 +337,32 @@ function App() {
       window.removeEventListener('resize', initScrollTrigger);
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
-  }, [isLoading, initScrollTrigger]);
+  }, [isLoading, isIntroPlaying, initScrollTrigger]);
+
+  // Card Intro Flip & Scale animation on page load
+  useEffect(() => {
+    if (!isLoading && cardRef.current) {
+      gsap.fromTo(cardRef.current, {
+        scale: 0.3,
+        z: -400,
+        y: 200,
+        rotationX: 180,
+        opacity: 0,
+      }, {
+        scale: 1,
+        z: 0,
+        y: 0,
+        rotationX: 0,
+        opacity: 1,
+        duration: 2.2,
+        ease: 'power4.out',
+        delay: 0.3,
+        onComplete: () => {
+          setIsIntroPlaying(false);
+        }
+      });
+    }
+  }, [isLoading]);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -352,7 +401,13 @@ function App() {
       />
 
       {/* Custom Cursor follower */}
-      <div ref={cursorRef} className="custom-cursor" />
+      <div ref={cursorRef} className={`custom-cursor state-${cursorState}`}>
+        <span className="cursor-label">
+          {cursorState === 'project' && 'VIEW'}
+          {cursorState === 'achievement' && 'AWARD'}
+          {cursorState === 'service' && 'MORE'}
+        </span>
+      </div>
 
       {/* Noise overlay */}
       <div className="grain-overlay" />
@@ -365,9 +420,9 @@ function App() {
         {isLoading && (
           <motion.div
             initial={{ opacity: 1 }}
-            exit={{ 
+            exit={{
               y: '-100%',
-              transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } 
+              transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] }
             }}
             className="loader-container"
           >
@@ -382,10 +437,10 @@ function App() {
                 gap: '12px'
               }}
             >
-              <h1 
-                style={{ 
-                  fontFamily: 'var(--font-display)', 
-                  fontSize: '4.5rem', 
+              <h1
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '4.5rem',
                   letterSpacing: '0.05em',
                   margin: 0,
                   color: '#ffffff'
@@ -393,7 +448,7 @@ function App() {
               >
                 VINAYAK PATEL
               </h1>
-              <div 
+              <div
                 style={{
                   width: '60px',
                   height: '2px',
@@ -425,7 +480,7 @@ function App() {
       {!isLoading && (
         <div style={{ opacity: 1 }}>
           <Navbar activeSection={activeSection} setActiveSection={setActiveSection} />
-          
+
           {/* Global Floating Theme Toggle Button (Centered Bottom, Reduced Size) */}
           <div
             style={{
@@ -470,12 +525,12 @@ function App() {
               />
             </button>
           </div>
-          
+
           {/* Scroll-Linked Animation Wrapper (Hero + Services + AboutMe) */}
           <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
-            
+
             {/* Absolute container that tracks the scroll-story height */}
-            <div 
+            <div
               style={{
                 position: 'absolute',
                 top: 0,
@@ -487,7 +542,7 @@ function App() {
               }}
             >
               {/* Sticky container pinned to viewport */}
-              <div 
+              <div
                 style={{
                   position: 'sticky',
                   top: 0,
@@ -497,95 +552,79 @@ function App() {
                   justifyContent: 'center',
                 }}
               >
-                {/* Global Transitioning Portrait Card (Double-Sided) */}
-                <div 
-                  ref={cardRef} 
-                  className="shared-portrait-card" 
-                  style={{ 
-                    pointerEvents: 'auto',
-                    transformStyle: 'preserve-3d',
+                {/* Stacking wrapper to keep the badge outside the 3D transformed card but aligned with it */}
+                <div
+                  style={{
+                    position: 'relative',
                     width: '380px',
                     height: '490px',
-                    position: 'relative',
+                    zIndex: 100,
                   }}
+                  onMouseEnter={() => setIsHeroHovered(true)}
+                  onMouseLeave={() => setIsHeroHovered(false)}
                 >
-                  {/* FRONT FACE (Duncan Portrait) */}
-                  <div className="card-face card-face-front">
-                    <img
-                      src={ASSETS.duncanPortrait}
-                      alt="Vinayak Patel"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        objectPosition: 'center 20%',
-                      }}
-                    />
-
-                    {/* Small green dot on front (center-right) */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '38%',
-                        right: '18%',
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--accent)',
-                        boxShadow: '0 0 8px var(--accent)',
-                      }}
-                    />
-
-                  </div>
-
-                  {/* BACK FACE (Workspace Preview) */}
-                  <div className="card-face card-face-back">
-                    <img
-                      src={ASSETS.workspaceBack}
-                      alt="Workspace Design"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-
-                    {/* Green dot on back (bottom-center) */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '12%',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--accent)',
-                        boxShadow: '0 0 8px var(--accent)',
-                      }}
-                    />
-
-                    {/* Secondary badge on back (bottom-right) */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '-10px',
-                        right: '-30px',
-                        width: '100px',
-                        height: '100px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(216,255,79,0.25)',
-                        border: '1px solid var(--accent)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        transform: 'rotate(180deg)',
-                      }}
-                    >
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 8a1.5 1.5 0 0 0-3 0v5h-.5a1.5 1.5 0 0 0-3 0v-6.5a1.5 1.5 0 0 0-3 0v7.5h-.5a1.5 1.5 0 0 0-3 0v3.5a7 7 0 0 0 13 0V8z" />
-                      </svg>
+                  {/* Global Transitioning Portrait Card (Double-Sided) */}
+                  <div
+                    ref={cardRef}
+                    className="shared-portrait-card"
+                    style={{
+                      pointerEvents: 'auto',
+                      transformStyle: 'preserve-3d',
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                    }}
+                  >
+                    {/* FRONT FACE (Duncan Portrait) */}
+                    <div className="card-face card-face-front">
+                      <img
+                        src={theme === 'light' ? ASSETS.hero.light : ASSETS.hero.dark}
+                        alt="Vinayak Patel"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center 20%',
+                        }}
+                      />
                     </div>
+
+                    {/* BACK FACE (Workspace Preview) */}
+                    <div className="card-face card-face-back">
+                      <img
+                        src={ASSETS.workspaceBack}
+                        alt="Workspace Design"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </div>
+
+                    {/* 3D Extrusion Thickness Layers (forms physical 6px solid depth rim) */}
+                    {Array.from({ length: 12 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="card-thickness-layer"
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          backgroundColor: theme === 'light' ? '#dedede' : '#141416',
+                          borderRadius: '32px',
+                          transform: `translateZ(${-3 + idx * 0.54}px)`,
+                          pointerEvents: 'none',
+                          border: theme === 'light' 
+                            ? '1px solid rgba(0, 0, 0, 0.04)' 
+                            : '1px solid rgba(255, 255, 255, 0.015)',
+                          boxShadow: theme === 'light'
+                            ? '0 0 10px rgba(0, 0, 0, 0.05) inset'
+                            : '0 0 15px rgba(0, 0, 0, 0.3) inset',
+                        }}
+                      />
+                    ))}
                   </div>
 
                   {/* Repositioned Draggable green badge with solid hand print icon */}
@@ -594,17 +633,16 @@ function App() {
                       <motion.div
                         className="hi-badge-container"
                         initial={{ opacity: 1, scale: 1 }}
-                        exit={{ 
-                          opacity: 0, 
-                          scale: 0.7, 
-                          transition: { duration: 0.5, ease: 'easeInOut' } 
+                        exit={{
+                          opacity: 0,
+                          scale: 0.7,
+                          transition: { duration: 0.5, ease: 'easeInOut' }
                         }}
                         style={{
                           position: 'absolute',
                           bottom: '-50px',
                           left: '-35px',
-                          zIndex: 110,
-                          transform: 'translateZ(1px)',
+                          zIndex: 200, // Rendered completely on top of the card
                           pointerEvents: 'auto',
                         }}
                       >
@@ -622,11 +660,54 @@ function App() {
                             justifyContent: 'center',
                             alignItems: 'center',
                             cursor: 'grab',
+                            boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)',
                           }}
                         >
-                          <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent-text)" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2c-.55 0-1 .45-1 1v7.15l-1.38-.92c-.55-.36-1.29-.29-1.76.18-.47.47-.54 1.21-.18 1.76l3.37 5.05c1.45 2.17 3.88 3.46 6.5 3.46h.45c1.1 0 2-.9 2-2V9c0-.55-.45-1-1-1s-1 .45-1 1v2h-1V6.5c0-.55-.45-1-1-1s-1 .45-1 1V11h-1V4.5c0-.55-.45-1-1-1s-1 .45-1 1V11h-1V4.5c0-.55-.45-1-1-1s-1 .45-1 1V2z" />
-                          </svg>
+                          <div style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '1.8rem',
+                            fontWeight: 700,
+                            color: 'var(--accent-text)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                            height: '100%',
+                            position: 'relative',
+                            userSelect: 'none',
+                          }}>
+                            <AnimatePresence mode="wait">
+                              {isHeroHovered ? (
+                                <motion.div
+                                  key="hand"
+                                  initial={{ scale: 0.5, rotate: -30, opacity: 0 }}
+                                  animate={{ 
+                                    scale: 1, 
+                                    rotate: [0, -15, 15, -15, 15, 0], 
+                                    opacity: 1 
+                                  }}
+                                  exit={{ scale: 0.5, rotate: 30, opacity: 0 }}
+                                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                  {/* Waving hand print SVG (matches Hero page hand icon exactly) */}
+                                  <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent-text)" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2c-.55 0-1 .45-1 1v7.15l-1.38-.92c-.55-.36-1.29-.29-1.76.18-.47.47-.54 1.21-.18 1.76l3.37 5.05c1.45 2.17 3.88 3.46 6.5 3.46h.45c1.1 0 2-.9 2-2V9c0-.55-.45-1-1-1s-1 .45-1 1v2h-1V6.5c0-.55-.45-1-1-1s-1 .45-1 1V11h-1V4.5c0-.55-.45-1-1-1s-1 .45-1 1V11h-1V4.5c0-.55-.45-1-1-1s-1 .45-1 1V2z" />
+                                  </svg>
+                                </motion.div>
+                              ) : (
+                                <motion.span
+                                  key="text"
+                                  initial={{ scale: 0.8, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  exit={{ scale: 0.8, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  Hi
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         </motion.div>
                       </motion.div>
                     )}
@@ -635,9 +716,9 @@ function App() {
               </div>
             </div>
 
-            <Hero placeholderRef={heroPlaceholderRef} />
+            <Hero placeholderRef={heroPlaceholderRef} theme={theme} />
             <Services placeholderRef={servicesPlaceholderRef} onHeightChange={initScrollTrigger} />
-            <AboutMe placeholderRef={aboutPlaceholderRef} />
+            <AboutMe placeholderRef={aboutPlaceholderRef} theme={theme} />
           </div>
 
           <Experience />
@@ -691,7 +772,7 @@ function App() {
                   {activeReleaseIndex + 1}/{newReleases.length}
                 </span>
               </div>
-              
+
               <div
                 style={{
                   width: '100%',
@@ -702,21 +783,21 @@ function App() {
                   position: 'relative'
                 }}
               >
-                 <img
-                   key={activeReleaseIndex}
-                   src={newReleases[activeReleaseIndex].image}
-                   alt={newReleases[activeReleaseIndex].title}
-                   className="mini-scroll-image"
-                   style={{
-                     width: '100%',
-                     height: 'auto',
-                     position: 'absolute',
-                     top: 0,
-                     left: 0,
-                     display: 'block',
-                     animation: `human-scroll ${newReleases[activeReleaseIndex].scrollDuration}s cubic-bezier(0.25, 1, 0.5, 1) forwards`
-                   }}
-                 />
+                <img
+                  key={activeReleaseIndex}
+                  src={newReleases[activeReleaseIndex].image}
+                  alt={newReleases[activeReleaseIndex].title}
+                  className="mini-scroll-image"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    display: 'block',
+                    animation: `human-scroll ${newReleases[activeReleaseIndex].scrollDuration}s cubic-bezier(0.25, 1, 0.5, 1) forwards`
+                  }}
+                />
               </div>
 
 
@@ -865,7 +946,7 @@ function App() {
                       >
                         Next ▶
                       </button>
-                      
+
                       <div style={{ width: '1px', height: '18px', backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
 
                       <button

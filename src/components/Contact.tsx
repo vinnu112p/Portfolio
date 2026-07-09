@@ -25,7 +25,34 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [isPortraitHovered, setIsPortraitHovered] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Initialize and check cooldown on mount
+  useEffect(() => {
+    const lastSubmission = localStorage.getItem('last_submission_time');
+    if (lastSubmission) {
+      const elapsed = Math.floor((Date.now() - parseInt(lastSubmission)) / 1000);
+      if (elapsed < 180) { // 3 minutes cooldown
+        setCooldownRemaining(180 - elapsed);
+      }
+    }
+  }, []);
+
+  // Tick down cooldown timer
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return;
+    const timer = setInterval(() => {
+      setCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldownRemaining]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,26 +64,71 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (cooldownRemaining > 0) {
+      alert(`Please wait ${cooldownRemaining} seconds before sending another message.`);
+      return;
+    }
     if (!name.trim() || !email.trim() || !message.trim() || !inquiryType || inquiryType === 'Select...') {
       alert('Please fill out all fields and select a service/inquiry type.');
       return;
     }
 
+    // Client-side Honeypot spam check
+    const form = e.target as HTMLFormElement;
+    const botcheck = form.elements.namedItem('botcheck') as HTMLInputElement;
+    if (botcheck && botcheck.checked) {
+      // Silently mock success to confuse spam bots and save API quota
+      setStatus('success');
+      return;
+    }
+
     setStatus('submitting');
 
-    // Simulate API submission
-    setTimeout(() => {
-      setStatus('success');
-      // Trigger canvas-confetti explosion
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.7 },
-        colors: theme === 'light' ? ['#5b65f2', '#ffffff', '#22c55e', '#FAF9F6'] : ['#d6f672', '#ffffff', '#22c55e', '#141414']
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY,
+          name: name,
+          email: email,
+          subject: `New Portfolio Message from ${name}`,
+          inquiry_type: inquiryType,
+          message: message,
+          from_name: 'Portfolio Website',
+        }),
       });
-    }, 1200);
+
+      const result = await response.json();
+
+      if (result.success) {
+        setStatus('success');
+        localStorage.setItem('last_submission_time', Date.now().toString());
+        setCooldownRemaining(180); // Start 3 minutes rate limit cooldown
+        // Trigger a very subtle, localized particle pop
+        confetti({
+          particleCount: 25,
+          spread: 45,
+          origin: { y: 0.65 },
+          colors: theme === 'light' ? ['#5b65f2', '#22c55e'] : ['#d6f672', '#22c55e'],
+          scalar: 0.6,
+          gravity: 0.9,
+          ticks: 65,
+        });
+      } else {
+        setStatus('error');
+        alert(result.message || 'Something went wrong. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setStatus('error');
+      alert('Network error. Please check your connection and try again.');
+    }
   };
 
   const handleReset = () => {
@@ -70,7 +142,7 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
   return (
     <section id="contact" className={styles.contactSection}>
       <div className={styles.container}>
-        
+
         {/* Header Block */}
         <div className={styles.headerBlock}>
           <h2 className={styles.title}>Let's work together</h2>
@@ -81,18 +153,18 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
 
         {/* Content Grid */}
         <div className={styles.grid}>
-          
+
           {/* Left Column: Portrait Card */}
           <div className={styles.portraitColumn}>
-            <div 
+            <div
               className={styles.portraitWrapper}
               onMouseEnter={() => setIsPortraitHovered(true)}
               onMouseLeave={() => setIsPortraitHovered(false)}
             >
               <div className={styles.portraitCard}>
-                <img 
-                  src={ASSETS.duncanPortrait} 
-                  alt="Vinayak Patel" 
+                <img
+                  src={theme === 'light' ? ASSETS.hero.light : ASSETS.hero.dark}
+                  alt="Vinayak Patel"
                   className={styles.portraitImage}
                 />
               </div>
@@ -105,10 +177,10 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                       <motion.div
                         key="hand"
                         initial={{ scale: 0.5, rotate: -30, opacity: 0 }}
-                        animate={{ 
-                          scale: 1, 
-                          rotate: [0, -15, 15, -15, 15, 0], 
-                          opacity: 1 
+                        animate={{
+                          scale: 1,
+                          rotate: [0, -15, 15, -15, 15, 0],
+                          opacity: 1
                         }}
                         exit={{ scale: 0.5, rotate: 30, opacity: 0 }}
                         transition={{ duration: 0.45, ease: 'easeOut' }}
@@ -141,7 +213,7 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
           <div className={styles.formColumn}>
             <AnimatePresence mode="wait">
               {status === 'success' ? (
-                <motion.div 
+                <motion.div
                   key="success"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -151,7 +223,12 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                 >
                   <div className={styles.successIcon}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
+                      <motion.polyline
+                        points="20 6 9 17 4 12"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ delay: 0.15, duration: 0.45, ease: 'easeOut' }}
+                      />
                     </svg>
                   </div>
                   <h3 className={styles.successTitle}>Message Sent!</h3>
@@ -171,13 +248,16 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                   exit={{ opacity: 0 }}
                   className={styles.form}
                 >
+                  {/* Honeypot Spam Protection */}
+                  <input type="checkbox" name="botcheck" className="hidden" style={{ display: 'none' }} />
+
                   <div className={styles.formRow}>
                     {/* Name */}
                     <div className={styles.inputGroup}>
                       <label className={styles.label} style={{ color: 'var(--accent)' }}>Name</label>
-                      <input 
-                        type="text" 
-                        placeholder="John Smith" 
+                      <input
+                        type="text"
+                        placeholder="John Smith"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className={styles.input}
@@ -189,9 +269,9 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                     {/* Email */}
                     <div className={styles.inputGroup}>
                       <label className={styles.label} style={{ color: 'var(--accent)' }}>Email</label>
-                      <input 
-                        type="email" 
-                        placeholder="johnsmith@gmail.com" 
+                      <input
+                        type="email"
+                        placeholder="johnsmith@gmail.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={styles.input}
@@ -217,8 +297,8 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                         <span style={{ opacity: inquiryType ? 1 : 0.5 }}>
                           {inquiryType || 'Select...'}
                         </span>
-                        <ChevronDown 
-                          size={18} 
+                        <ChevronDown
+                          size={18}
                           className={styles.selectChevron}
                           style={{
                             transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -259,8 +339,8 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                   {/* Message */}
                   <div className={styles.inputGroup}>
                     <label className={styles.label} style={{ color: 'var(--accent)' }}>What Can I Help You...</label>
-                    <textarea 
-                      placeholder="Hello, I'd like to enquire about..." 
+                    <textarea
+                      placeholder="Hello, I'd like to enquire about..."
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       className={styles.textarea}
@@ -270,12 +350,20 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                   </div>
 
                   {/* Submit Button */}
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className={styles.submitBtn}
-                    disabled={status === 'submitting'}
+                    disabled={status === 'submitting' || cooldownRemaining > 0}
+                    style={{
+                      opacity: (status === 'submitting' || cooldownRemaining > 0) ? 0.6 : 1,
+                      cursor: (status === 'submitting' || cooldownRemaining > 0) ? 'not-allowed' : 'pointer',
+                    }}
                   >
-                    {status === 'submitting' ? 'SUBMITTING...' : 'SUBMIT'}
+                    {status === 'submitting'
+                      ? 'SUBMITTING...'
+                      : cooldownRemaining > 0
+                      ? `COOLDOWN (${cooldownRemaining}S)`
+                      : 'SUBMIT'}
                   </button>
                 </motion.form>
               )}
@@ -289,9 +377,9 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
       {/* Solid Lime-Green Footer (Spanning Full Width) */}
       <footer className={styles.footer}>
         <div className={styles.footerContainer}>
-          
+
           <div className={styles.footerColumns}>
-            
+
             {/* Column 1: Email */}
             <div className={styles.footerCol}>
               <span className={styles.footerLabel}>Email :</span>
@@ -313,10 +401,10 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
               <span className={styles.footerLabel}>Social :</span>
               <div className={styles.socialRow}>
                 {/* LinkedIn */}
-                <a 
-                  href="https://www.linkedin.com/in/vinayakpatell" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://www.linkedin.com/in/vinayakpatell"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={styles.socialLink}
                   aria-label="LinkedIn"
                 >
@@ -326,12 +414,12 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                     <circle cx="4" cy="4" r="2" />
                   </svg>
                 </a>
-                
+
                 {/* GitHub */}
-                <a 
-                  href="https://github.com/vinnu112p" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://github.com/vinnu112p"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={styles.socialLink}
                   aria-label="GitHub"
                 >
@@ -342,23 +430,23 @@ export const Contact: React.FC<ContactProps> = ({ theme }) => {
                 </a>
 
                 {/* X / Twitter */}
-                <a 
-                  href="https://x.com/Patelvinnu112" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://x.com/Patelvinnu112"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={styles.socialLink}
                   aria-label="X (Twitter)"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                   </svg>
                 </a>
 
                 {/* Instagram */}
-                <a 
-                  href="https://www.instagram.com/vinnuuuu_35/" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://www.instagram.com/vinnuuuu_35/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={styles.socialLink}
                   aria-label="Instagram"
                 >

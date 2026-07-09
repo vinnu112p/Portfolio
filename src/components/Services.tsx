@@ -125,9 +125,10 @@ export const Services: React.FC<ServicesProps> = ({ placeholderRef, onHeightChan
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             <div>
               <h2
+                className="services-heading"
                 style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(3rem, 6vw, 4.5rem)',
+                  fontSize: 'clamp(2.5rem, 5.2vw, 4.2rem)', // Adjusted size to fit beautifully
                   lineHeight: 0.95,
                   fontWeight: 'bold',
                   color: 'var(--text-primary)',
@@ -160,6 +161,7 @@ export const Services: React.FC<ServicesProps> = ({ placeholderRef, onHeightChan
                     onMouseEnter={() => setHoveredItem(item)}
                     onMouseLeave={() => setHoveredItem(null)}
                     className={`services-row ${isHovered ? 'is-hovered' : ''}`}
+                    data-cursor="service"
                     style={{
                       borderBottom: '1px solid var(--border-color)',
                       padding: '24px 0',
@@ -473,6 +475,14 @@ export const Services: React.FC<ServicesProps> = ({ placeholderRef, onHeightChan
             max-width: 320px !important;
             height: 410px !important;
             margin: 0 auto !important;
+          }
+        }
+        .services-heading {
+          white-space: nowrap;
+        }
+        @media (max-width: 900px) {
+          .services-heading {
+            white-space: normal !important;
           }
         }
       `}</style>
