@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# Vinayak Patel - Developer Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A professional, high-performance developer portfolio built using React, TypeScript, and modern animation libraries. Designed with a clean, dark-themed, premium aesthetic, it showcases projects, achievements, skills, and professional experience.
 
-Currently, two official plugins are available:
+## Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Interactive 3D Hero Card**: A drag-responsive, 3D-perspective portrait card that anchors the hero section, integrated with custom smooth-fade scroll badges.
+- **Glassmorphic Navigation**: A compact, floating navbar featuring dropdown categorization for auxiliary sections and custom theme-appropriate hover transitions.
+- **Interactive Project Showcase**: A dynamic layout featuring horizontal auto-cycling releases alongside scrolling viewport previews of web applications.
+- **Fluid Micro-Animations**: Built using GSAP ScrollTrigger and Framer Motion spring physics to create organic transitions, responsive hover states, and smooth physics.
+- **Smooth Inertial Scrolling**: Integrated with Lenis scroll engine, fully synchronized with GSAP timelines and programmatic navbar scrollTo targets.
+- **Secure Serverless Contact Form**: Implements client-side honeypot spam traps, localStorage-based rate-limiting (3-minute cooldown with countdown timer), and Web3Forms email forwarding.
+- **Dynamic Theme Architecture**: Support for system/data-theme switching with tailored HSL color tokens for dark and light presentations.
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Core**: React, TypeScript, Vite
+- **Styling**: Vanilla CSS, Framer Motion
+- **Animations**: GreenSock Animation Platform (GSAP), Lenis (Smooth Scroll)
+- **Email Delivery**: Web3Forms API
+- **Local Assets**: Cloudinary CDN (documents)
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Ensure you have Node.js (v18 or higher) installed on your system.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/vinnu112p/Portfolio.git
+   cd Portfolio
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file in the root directory and add your Web3Forms access key:
+   ```env
+   VITE_WEB3FORMS_ACCESS_KEY=your_web3forms_access_key_here
+   ```
+   *(You can obtain a free access key from [Web3Forms](https://web3forms.com/))*
+
+### Development
+
+Start the local development server:
+```bash
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Production Build
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Compile and bundle the application for production:
+```bash
+npm run build
 ```
+The compiled assets will be generated in the `dist` directory, ready to be hosted on Vercel, Netlify, or any static provider.
+
+## Design Attribution
+
+The visual layout, design system guidelines, and aesthetic inspiration for this portfolio were inspired by the Portavia website.
+
+## License
+
+This project is open-source and available under the MIT License.
