@@ -627,7 +627,7 @@ a.footerValue:hover {
 /* ---------------------------------------------------- */
 /* Media Queries & Responsive Design                    */
 /* ---------------------------------------------------- */
-@media (max-width: 960px) {
+@media (max-width: 991px) {
   .grid {
     grid-template-columns: 1fr;
     gap: 60px;
@@ -670,7 +670,17 @@ a.footerValue:hover {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
+  .portraitColumn {
+    display: none !important;
+  }
+
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+    margin-bottom: 48px !important;
+  }
+
   .contactSection {
     padding: 80px 16px 0px;
   }

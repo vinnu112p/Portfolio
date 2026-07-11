@@ -86,10 +86,10 @@ export const Projects: React.FC<ProjectsProps> = ({ theme }) => {
 
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  // Sync isMobile state with viewport width
+  // Sync isMobile state with viewport width - always use desktop scroll-pinning layout
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 900);
+      setIsMobile(false);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -159,6 +159,57 @@ export const Projects: React.FC<ProjectsProps> = ({ theme }) => {
         padding: isMobile ? '80px 16px' : '0',
       }}
     >
+      <style>{`
+        /* CSS overrides for responsive sticky projects section */
+        @media (max-width: 991px) {
+          .projects-inner-container {
+            padding-top: 100px !important;
+            padding-bottom: 80px !important;
+          }
+          .projects-header-block {
+            text-align: center !important;
+            margin-bottom: 24px !important;
+            padding: 0 24px !important;
+          }
+          .projects-header-block h2 {
+            font-size: clamp(2.4rem, 5vw, 3.5rem) !important;
+            text-align: center !important;
+          }
+          .projects-header-block p {
+            margin: 0 auto !important;
+            font-size: 1rem !important;
+            text-align: center !important;
+          }
+          .projects-cards-container {
+            height: 520px !important;
+            max-width: 90% !important;
+          }
+          .project-card-details {
+            padding: 24px 28px !important;
+          }
+        }
+
+        @media (max-width: 767px) {
+          .projects-inner-container {
+            padding-top: 95px !important;
+            padding-bottom: 60px !important;
+          }
+          .projects-cards-container {
+            height: 480px !important; /* Shorter card height for phone */
+            max-width: 92% !important;
+            margin-top: -50px !important; /* Shift card up to clear bottom cutoff on phone */
+          }
+          .project-card-details {
+            padding: 20px 20px !important;
+          }
+          .project-card-mockup {
+            display: none !important; /* Hide mockup on phone screens */
+          }
+          .projects-dots-container {
+            bottom: 3% !important;
+          }
+        }
+      `}</style>
       {isMobile ? (
         /* Mobile Layout: Premium vertical scroll list */
         <div className="container">
@@ -180,6 +231,7 @@ export const Projects: React.FC<ProjectsProps> = ({ theme }) => {
       ) : (
         /* Desktop Sticky Viewport */
         <div
+          className="projects-sticky-container"
           style={{
             position: 'sticky',
             top: 0,
@@ -204,7 +256,7 @@ export const Projects: React.FC<ProjectsProps> = ({ theme }) => {
           />
 
           <div
-            className="container"
+            className="container projects-inner-container"
             style={{
               position: 'relative',
               zIndex: 1,
@@ -220,6 +272,7 @@ export const Projects: React.FC<ProjectsProps> = ({ theme }) => {
           >
             {/* Header: Title and description (natural vertical flex, moves up on scroll) */}
             <motion.div
+              className="projects-header-block"
               style={{
                 y: headerY,
                 opacity: headerOpacity,
@@ -258,6 +311,7 @@ export const Projects: React.FC<ProjectsProps> = ({ theme }) => {
 
             {/* Stacked Cards Container */}
             <motion.div
+              className="projects-cards-container"
               style={{
                 y: cardContainerY,
                 position: 'relative',
@@ -283,6 +337,7 @@ export const Projects: React.FC<ProjectsProps> = ({ theme }) => {
             <div
               role="tablist"
               aria-label="Featured Projects Navigation"
+              className="projects-dots-container"
               style={{
                 display: 'flex',
                 justifyContent: 'center',
@@ -350,8 +405,8 @@ const StackCardItem: React.FC<{
     y = useTransform(scrollYProgress, [0, pEnd, 1.0], [0, 0, - (total - 1) * 12]);
     scale = useTransform(scrollYProgress, [0, pEnd, 1.0], [1, 1, 1 - (total - 1) * 0.035]);
   } else if (index === total - 1) {
-    // Last card slides up and settles as the top-most stack item
-    y = useTransform(scrollYProgress, [Math.max(0, pStart - 0.05), 1.0], [800, index * 18]);
+    // Last card slides up and settles early (by 0.88 progress) so it is fully visible before scroll end
+    y = useTransform(scrollYProgress, [Math.max(0, pStart - 0.05), pStart + 0.15], [800, index * 18]);
     scale = 1;
   } else {
     // Middle cards slide up, stay active for a bit, then scale down as subsequent cards stack
@@ -384,9 +439,15 @@ const StackCardItem: React.FC<{
         overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .project-card-mockup { display: none !important; }
+        }
+      `}</style>
+      <div className="project-card-inner" style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%' }}>
         {/* Left Column: Details */}
         <div
+          className="project-card-details"
           style={{
             flex: 1.1,
             padding: '36px 40px',
@@ -535,6 +596,7 @@ const StackCardItem: React.FC<{
 
         {/* Right Column: Landscape browser mockup display */}
         <div
+          className="project-card-mockup"
           style={{
             flex: 1.3,
             display: 'flex',

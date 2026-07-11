@@ -193,6 +193,15 @@ function App() {
 
   // ScrollTrigger card layout transition setup (using native sticky track layout)
   const initScrollTrigger = useCallback(() => {
+    // Disable card movements and scroll trigger animations on tablet and mobile viewports
+    if (window.innerWidth <= 991) {
+      const existing = ScrollTrigger.getById('app-portrait-card-trigger');
+      if (existing) {
+        existing.kill();
+      }
+      return;
+    }
+
     if (
       !heroPlaceholderRef.current ||
       !servicesPlaceholderRef.current ||
@@ -1007,8 +1016,8 @@ function App() {
         .mini-scroll-image {
           /* Defined dynamically inline */
         }
-        @media (max-width: 900px) {
-          .shared-portrait-card {
+        @media (max-width: 991px) {
+          .shared-portrait-card, .hi-badge-container {
             display: none !important;
           }
           .fixed-widgets {

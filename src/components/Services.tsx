@@ -293,6 +293,7 @@ export const Services: React.FC<ServicesProps> = ({ placeholderRef, onHeightChan
 
           {/* Right Column - Sticky Portrait Card Placeholder */}
           <div
+            className="services-portrait-col"
             style={{
               display: 'flex',
               justifyContent: 'center',
@@ -454,12 +455,12 @@ export const Services: React.FC<ServicesProps> = ({ placeholderRef, onHeightChan
           color: var(--accent-text) !important;
         }
 
-        @media (min-width: 901px) {
+        @media (min-width: 992px) {
           .mobile-portrait-fallback {
             display: none !important;
           }
         }
-        @media (max-width: 900px) {
+        @media (max-width: 991px) {
           .hover-preview-image {
             display: none !important;
           }
@@ -475,6 +476,14 @@ export const Services: React.FC<ServicesProps> = ({ placeholderRef, onHeightChan
             max-width: 320px !important;
             height: 410px !important;
             margin: 0 auto !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .services-portrait-col {
+            display: none !important;
+          }
+          .services-grid {
+            gap: 24px !important;
           }
         }
         .services-heading {

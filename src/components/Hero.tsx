@@ -60,6 +60,7 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef, theme }) => {
     <section
       id="home"
       ref={containerRef}
+      className="hero-section"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -269,10 +270,14 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef, theme }) => {
           }
         }
         @media (max-width: 991px) {
+          .hero-section {
+            min-height: auto !important;
+            padding: 140px 24px 50px !important; /* Added top padding to push text below the floating navbar */
+          }
           .hero-grid {
             grid-template-columns: 1fr !important;
             grid-template-rows: auto auto auto !important;
-            gap: 40px !important;
+            gap: 24px !important; /* Reduced row gaps */
           }
           .hero-left, .hero-right {
             align-items: center !important;
@@ -281,16 +286,16 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef, theme }) => {
           }
           .hero-center {
             max-width: 380px !important;
-            height: 420px !important;
+            height: 420px !important; /* Restored original height */
             margin: 0 auto !important;
           }
           .hero-portrait-placeholder {
             max-width: 320px !important;
-            height: 410px !important;
+            height: 410px !important; /* Restored original height */
           }
           .hero-name-wrapper, .hero-desc-wrapper {
             position: static !important;
-            margin: 12px 0 0 !important;
+            margin: 8px 0 0 !important;
             transform: none !important;
             width: auto !important;
             max-width: none !important;
@@ -299,6 +304,22 @@ export const Hero: React.FC<HeroProps> = ({ placeholderRef, theme }) => {
           .hero-desc-wrapper p {
             max-width: 280px !important;
             margin: 0 auto !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .hero-section {
+            padding: 120px 16px 30px !important; /* Added top padding to push text below the floating navbar */
+          }
+          .hero-grid {
+            gap: 16px !important; /* Even smaller gaps for phone screens */
+          }
+          .hero-center {
+            max-width: 380px !important;
+            height: 420px !important; /* Keep original large size on phone as well */
+          }
+          .hero-portrait-placeholder {
+            max-width: 320px !important;
+            height: 410px !important; /* Keep original large size on phone as well */
           }
         }
       `}</style>

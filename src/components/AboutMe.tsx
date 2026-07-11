@@ -310,6 +310,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ placeholderRef, theme }) => {
 
           {/* Right Column - Sticky Portrait Card Placeholder */}
           <div
+            className="aboutme-portrait-col"
             style={{
               display: 'flex',
               justifyContent: 'center',
@@ -395,12 +396,12 @@ export const AboutMe: React.FC<AboutMeProps> = ({ placeholderRef, theme }) => {
           color: var(--accent-text) !important;
           border-color: var(--accent);
         }
-        @media (min-width: 901px) {
+        @media (min-width: 992px) {
           .mobile-portrait-fallback {
             display: none !important;
           }
         }
-        @media (max-width: 900px) {
+        @media (max-width: 991px) {
           .aboutme-portrait-placeholder {
             border: 1px solid var(--border-color) !important;
             box-shadow: 0 12px 24px rgba(0,0,0,0.2) !important;
@@ -413,6 +414,14 @@ export const AboutMe: React.FC<AboutMeProps> = ({ placeholderRef, theme }) => {
             max-width: 320px !important;
             height: 410px !important;
             margin: 0 auto !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .aboutme-portrait-col {
+            display: none !important;
+          }
+          .aboutme-grid {
+            gap: 24px !important;
           }
         }
       `}</style>
