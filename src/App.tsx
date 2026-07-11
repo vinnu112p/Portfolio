@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { Navbar } from './components/Navbar';
 import { useLenis } from './lib/useLenis';
+import { Analytics } from '@vercel/analytics/react';
 import { ASSETS } from './lib/assetsConfig';
 import { Hero } from './components/Hero';
 import { Services } from './components/Services';
@@ -1025,7 +1026,7 @@ function App() {
           }
         }
       `}</style>
-
+      <Analytics />
     </>
   );
 }
